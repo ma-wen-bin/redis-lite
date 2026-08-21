@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstddef>
 #include "util/ring_buffer.h"
+#include "util/parser.h"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ struct addrinfo *servInfo; // pointer to the results
 struct sockaddr_storage clientAddr;
 int newSockfd; //new socket file descriptor (client's)
 RingBuffer buffer(8192); //ring buffer
+MessageParser parser;
 
 int main() {
     
@@ -54,11 +56,16 @@ int main() {
         if (buffer.isFull()) {
             //peek to view all available data
             const auto& [ readPtr, readLen ] = buffer.peek();
-            //TODO: scan until delimiter is found - postion/offset
-            //TODO: call the parser and slice the data until the delimiter (one full message)
-            //consume the data to move the tail ptr
-            buffer.consume(readLen);
+            size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
+            buffer.consume(bytes_consumed);
+            
+            if (bytes_consumed == 0) { // no delimiter found -> close connection 
+                cout << "Message exceeds buffer size, closing connection." << '\n';
+                exit(EXIT_FAILURE);
+            }
+
         } else {
+            cout << "Current buffer size: " << buffer.size() << '\n';
             const auto& [ writePtr, writeLen ] = buffer.writeableSpan(); // get the starting point and length that is empty
             size_t bytes_read = recv(newSockfd, writePtr, writeLen, 0); // write to the buffer 
             cout << "Read :" << bytes_read << " bytes" << '\n';
@@ -75,12 +82,10 @@ int main() {
             } 
 
             const auto& [ readPtr, readLen ] = buffer.peek();
-            if (readLen > 0) {
-                //TODO: scan until delimiter is found - postion/offset
-                //TODO: call the parser and slice the data until the delimiter (one full message)
-                //consume the data to move the tail ptr
-                cout << "Parser has consumed: " << readLen << '\n';
-                buffer.consume(readLen);
+            size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
+            if (bytes_consumed > 0) {
+                buffer.consume(bytes_consumed);
+                cout << "Parser has consumed: " << bytes_consumed << '\n';
             }
 
         }  

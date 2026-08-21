@@ -17,7 +17,7 @@ class RingBuffer {
     RingBuffer(size_t size);
     std::pair<uint8_t*, size_t> writeableSpan();
     void commitWrite(size_t bytesRead);
-    std::pair<const uint8_t*, size_t> peek() const;
+    std::pair<uint8_t*, size_t> peek();
     void consume(size_t bytes);
     void reset();
     bool isFull() const;

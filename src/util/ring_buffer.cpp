@@ -37,9 +37,9 @@ using namespace std;
     }
 
     //peek for consumer 
-    pair<const uint8_t*, size_t> RingBuffer::peek() const {
+    pair<uint8_t*, size_t> RingBuffer::peek() {
 
-        const uint8_t* tailptr = &buffer[tail];
+        uint8_t* tailptr = &buffer[tail];
         size_t length;
 
         if (full) {  
