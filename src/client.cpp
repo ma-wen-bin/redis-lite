@@ -34,7 +34,7 @@ int main() {
     }
     cout << "Connected to server!" << '\n';
 
-    std::string message = "Hello from client \n";
+    std::string message = "$3\r\n<data>\r\n";
     
     int bytes_sent = 0;
     while (bytes_sent < message.length()) {
