@@ -82,6 +82,7 @@ int main() {
             } 
 
             const auto& [ readPtr, readLen ] = buffer.peek();
+            cout << "Peeked: " << readLen << '\n';
             size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
             if (bytes_consumed > 0) {
                 buffer.consume(bytes_consumed);
