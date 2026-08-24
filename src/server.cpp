@@ -52,44 +52,53 @@ int main() {
     }
     
     //RECEIVE INCOMING MESSAGES
-    while (true) {
+    while(true) {
         if (buffer.isFull()) {
             //peek to view all available data
             const auto& [ readPtr, readLen ] = buffer.peek();
             size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
             buffer.consume(bytes_consumed);
-            
+
             if (bytes_consumed == 0) { // no delimiter found -> close connection 
                 cout << "Message exceeds buffer size, closing connection." << '\n';
                 exit(EXIT_FAILURE);
             }
+        }
 
-        } else {
-            cout << "Current buffer size: " << buffer.size() << '\n';
-            const auto& [ writePtr, writeLen ] = buffer.writeableSpan(); // get the starting point and length that is empty
-            size_t bytes_read = recv(newSockfd, writePtr, writeLen, 0); // write to the buffer 
-            cout << "Read :" << bytes_read << " bytes" << '\n';
-            buffer.commitWrite(bytes_read); // update the head pointer's position 
+        const auto& [ writePtr, writeLen ] = buffer.writeableSpan(); // get the starting point and length that is empty
+        size_t bytes_read = recv(newSockfd, writePtr, writeLen, 0); // write to the buffer 
 
-            if (bytes_read == -1) {
-                cout << "Read error : " << strerror(errno) << '\n';
-                break;
-            }
+        if (bytes_read == -1) {
+            cout << "Read error : " << strerror(errno) << '\n';
+            break;
+        }
 
-            if (bytes_read == 0) {
-                cout << "Client disconnected." << '\n';
-                break;
-            } 
-
-            const auto& [ readPtr, readLen ] = buffer.peek();
-            cout << "Peeked: " << readLen << '\n';
-            size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
-            if (bytes_consumed > 0) {
+        if (bytes_read == 0) {
+            while (buffer.size() > 0) {
+                cout << "Client disconnected. Parsing the remaining buffer" << '\n';
+                const auto& [ readPtr, readLen ] = buffer.peek();
+                size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
+                if (bytes_consumed == 0) break;
                 buffer.consume(bytes_consumed);
                 cout << "Parser has consumed: " << bytes_consumed << '\n';
             }
 
-        }  
+            break;
+        }
+        
+        cout << "Current buffer size: " << buffer.size() << '\n';
+        cout << "Writeable length: " << writeLen << '\n';
+        cout << "Read :" << bytes_read << " bytes" << '\n';
+        buffer.commitWrite(bytes_read); // update the head pointer's position 
+        
+        const auto& [ readPtr, readLen ] = buffer.peek();
+        cout << "Peeked: " << readLen << '\n';
+        size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
+        if (bytes_consumed > 0) {
+            buffer.consume(bytes_consumed);
+            cout << "Parser has consumed: " << bytes_consumed << '\n';
+        }
+
     }
 
     return 0;
