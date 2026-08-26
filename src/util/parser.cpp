@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include "parser.h"
-#include "../request.h";
+#include "../request.h"
 
 int getValue(std::vector<uint8_t> &destination) {
     int result{0};
@@ -64,16 +64,21 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
             std::string data;
             data.resize(termPtr - readPtr);
             std::copy(readPtr, termPtr, data.begin());
+            std::cout << "DATA IS: " << data << '\n';
+            std::cout << "REQUEST IS " << req.getStringType() << '\n';
             if (data == "GET" || data == "SET" || data == "DEL") {
+                std::cout << "setting type: " << data << '\n';
                 req.setType(data);
+                req.addArgument(data); 
             } else {
-                req.addArgument(data);                
+                req.addArgument(data);   
+                std::cout << "Added arg: " << data << '\n';             
             }
 
             if (req.isComplete()) {
-                 // SEND COMMAND TO REQUEST HANDLER
+                std::cout << "Request is completed. Executing..." << '\n';
+                map.performRequest(req);
                 req.reset();
-               
             }
 
             parsedBytes += expectedMessageLength;

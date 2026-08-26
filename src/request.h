@@ -1,7 +1,10 @@
+#pragma once
+
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include "util/parser.h"
+#include <unordered_map>
+#include <vector>
 
 enum class RequestType {
     GET, 
@@ -10,21 +13,23 @@ enum class RequestType {
     NONE
 };
 
-static std::unordered_map<std::string, RequestType> requestTypeMap {
-    {"GET", RequestType::GET},
-    {"SET", RequestType::SET},
-    {"DEL", RequestType::DEL}
-};
 
 class Request {
     private:
     RequestType type;
     std::vector<std::string> args; 
+    inline static const std::unordered_map<std::string, RequestType> requestTypeMap {
+    {"GET", RequestType::GET},
+    {"SET", RequestType::SET},
+    {"DEL", RequestType::DEL}
+    };
 
 
     public:
-    Request() {};
-    Request(RequestType& t) : type(t) {};
+    Request() : type(RequestType::NONE) {};
+    Request(RequestType& t) : type(t) {
+        std::cout << "Initialised new request object" << '\n';
+    };
     void setType(const RequestType& t);
     void setType(std::string& t);
     void addArgument(std::string arg);
@@ -32,6 +37,7 @@ class Request {
     std::string getKey() const;
     std::string getValue() const;
     RequestType getType() const;
+    std::string getStringType() const;
     bool isComplete() const;
     void reset();
 

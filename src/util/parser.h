@@ -5,6 +5,7 @@
 #include <cstddef>    
 #include <algorithm>  
 #include <unordered_map>
+#include "../redis_map.h"
 
 enum class RespType {
     SimpleString, 
@@ -18,6 +19,7 @@ class MessageParser {
     private: 
     static inline const uint8_t TERMINATOR_ONE = '\r';
     static inline const uint8_t TERMINATOR_TWO = '\n';
+    RedisMap map;
     Request req;
     int expectedElements = 0;
     bool PROCESSING_ARRAY = false;

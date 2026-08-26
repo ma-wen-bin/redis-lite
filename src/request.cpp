@@ -1,24 +1,13 @@
-#include <string>
-#include <iostream>
-#include <stdexcept>
-#include "util/parser.h"
 #include "request.h"
-
-
-
-Request::Request(RequestType &t) : type(t)
-{
-    std::cout << "Initialised new request object" << '\n';
-}
 
 void Request::setType(const RequestType &t)
 {   
-    type = type;
+    type = t;
 }
 
 void Request::setType(std::string& t) {
-    auto iterator = requestTypeMap.find(t);
-    if (iterator != requestTypeMap.end()) {
+    auto iterator = Request::requestTypeMap.find(t);
+    if (iterator != Request::requestTypeMap.end()) {
         type = iterator->second;
         return;
     }
@@ -43,12 +32,22 @@ std::string Request::getValue() const
 
 RequestType Request::getType() const { return type; }
 
+std::string Request::getStringType() const 
+{ 
+    if (getType() == RequestType::GET) { return "GET" ;} 
+    if (getType() == RequestType::SET) { return "SET" ;} 
+    if (getType() == RequestType::DEL) { return "DEL" ;}
+    if (getType() == RequestType::NONE) { return "NONE" ;} 
+    return "";
+}
+
 bool Request::isComplete() const
 {
     if (type == RequestType::SET)
         return args.size() == 2;
     if (type == RequestType::GET || type == RequestType::DEL)
         return args.size() == 1;
+    return false;
 }
 
 void Request::reset() {
