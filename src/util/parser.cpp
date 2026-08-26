@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include "parser.h"
+#include "../request.h";
 
 int getValue(std::vector<uint8_t> &destination) {
     int result{0};
@@ -59,8 +60,22 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
 
         // ensure that terminators are present
         if (TERMINATOR_ONE == *termPtr && TERMINATOR_TWO == *(termPtr + 1))
-        {
-            // TODO: put the data into a string data member of "Command" object
+        {   
+            std::string data;
+            data.resize(termPtr - readPtr);
+            std::copy(readPtr, termPtr, data.begin());
+            if (data == "GET" || data == "SET" || data == "DEL") {
+                req.setType(data);
+            } else {
+                req.addArgument(data);                
+            }
+
+            if (req.isComplete()) {
+                 // SEND COMMAND TO REQUEST HANDLER
+                req.reset();
+               
+            }
+
             parsedBytes += expectedMessageLength;
             expectedMessageLength = 0; // reset expected message length
 

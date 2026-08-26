@@ -18,6 +18,7 @@ class MessageParser {
     private: 
     static inline const uint8_t TERMINATOR_ONE = '\r';
     static inline const uint8_t TERMINATOR_TWO = '\n';
+    Request req;
     int expectedElements = 0;
     bool PROCESSING_ARRAY = false;
     bool EMPTY_BULK_STRING = false;
