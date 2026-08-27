@@ -5,7 +5,14 @@
 #include <cstddef>    
 #include <algorithm>  
 #include <unordered_map>
-#include "../redis_map.h"
+#include <optional>
+
+struct ParsedMessage {
+    std::optional<Request> req;
+    size_t parsedBytes {0};
+    ParsedMessage();
+    ParsedMessage(size_t parsedBytes) : parsedBytes(parsedBytes) {}
+};
 
 enum class RespType {
     SimpleString, 
@@ -19,7 +26,6 @@ class MessageParser {
     private: 
     static inline const uint8_t TERMINATOR_ONE = '\r';
     static inline const uint8_t TERMINATOR_TWO = '\n';
-    RedisMap map;
     Request req;
     int expectedElements = 0;
     bool PROCESSING_ARRAY = false;
@@ -36,5 +42,5 @@ class MessageParser {
 
     public:
     uint8_t* getLastPointer(uint8_t* readPtr, size_t length);
-    size_t consumeBytes(uint8_t* readPtr, size_t length);
+    ParsedMessage consumeBytes(uint8_t* readPtr, size_t length);
 };

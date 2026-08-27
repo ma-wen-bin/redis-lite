@@ -39,8 +39,8 @@ uint8_t *MessageParser::getLastPointer(uint8_t *readPtr, size_t length) { // ret
     return 0;
 }
 
-size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
-
+ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
+    ParsedMessage parsedMessage;
     // PROCESS NULL OR EMPTY BULK STRING
     if (EMPTY_BULK_STRING)
     {
@@ -49,7 +49,8 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
             --expectedElements;
             if (expectedElements == 0) { PROCESSING_ARRAY = false; }
         }
-        return 2;
+        parsedMessage.parsedBytes = 2;
+        return parsedMessage;
     }
 
     // PROCESSING VALID BULK STRINGS
@@ -77,7 +78,7 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
 
             if (req.isComplete()) {
                 std::cout << "Request is completed. Executing..." << '\n';
-                map.performRequest(req);
+                parsedMessage.req = req;
                 req.reset();
             }
 
@@ -90,13 +91,16 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
                 if (expectedElements == 0) { PROCESSING_ARRAY = false; }
             }
         }
-
-        return parsedBytes + 2;
+        parsedMessage.parsedBytes = parsedBytes + 2;
+        return parsedMessage;
     }
 
     // get the last pointer BEFORE the terminator
     uint8_t *lastPtr = getLastPointer(readPtr, length);
-    if (lastPtr == 0) { return 0; }
+    if (lastPtr == 0) { 
+        parsedMessage.parsedBytes = 0;
+        return parsedMessage; 
+    }
 
     //  resize the destination vector
     destination.clear();
@@ -122,14 +126,15 @@ size_t MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
     {                                             // if new array message
         expectedElements = getValue(destination); // number of elements that should be in array
         PROCESSING_ARRAY = true;                  // set the state machine to true
-        return lastPtr - readPtr + 2;             // the number of bytes read
+        parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
+        return parsedMessage;             // the number of bytes read
     }
     else if (respType == RespType::BulkString)
     {                                                  // if processing bulk string message and still within an array
         expectedMessageLength = getValue(destination); // set the expected message length
         if (expectedMessageLength == 0 ) { EMPTY_BULK_STRING = true; };
-
-        return lastPtr - readPtr + 2;
+        parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
+        return parsedMessage;
     }
     else
     {

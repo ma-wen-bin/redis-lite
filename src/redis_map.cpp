@@ -1,5 +1,11 @@
 #include "redis_map.h"
 
+void RedisMap::processRequestQueue(std::queue<Request>& requestQueue) {
+    while (!requestQueue.empty()) {
+       //PROCESS THE ELEMENTS 
+    }
+}
+
 void RedisMap::performRequest(const Request &request)
 {
     switch (request.getType())
@@ -37,6 +43,7 @@ void RedisMap::getValue(const Request &request)
         if (iterator != redisMap.end()) {
             std::string value = redisMap[request.getKey()];
             std::cout << "Key: " << request.getKey() << " with value: " << request.getValue() << " was retrieved." << '\n';
+            //SEND MESSAGE 
             return;
         }
 

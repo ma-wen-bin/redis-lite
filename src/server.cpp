@@ -1,11 +1,13 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <cstring>
 #include <cstddef>
-#include "util/ring_buffer.h"
-#include "util/parser.h"
+#include "connection.h"
+#include "redis_map.h"
+
 
 using namespace std;
 
@@ -14,8 +16,10 @@ struct addrinfo hints; // struct that contains information of the connection
 struct addrinfo *servInfo; // pointer to the results
 struct sockaddr_storage clientAddr;
 int newSockfd; //new socket file descriptor (client's)
-RingBuffer buffer(8192); //ring buffer
-MessageParser parser;
+Connection connection;
+RedisMap map;
+std::queue<Request> requestQueue;
+
 
 int main() {
     
@@ -50,56 +54,30 @@ int main() {
     if (newSockfd == -1) {
         return errno;
     }
+    Connection connection = Connection(newSockfd);
     
     //RECEIVE INCOMING MESSAGES
     while(true) {
-        if (buffer.isFull()) {
-            //peek to view all available data
-            const auto& [ readPtr, readLen ] = buffer.peek();
-            size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
-            buffer.consume(bytes_consumed);
+        IncomingMessage incomingMessage = connection.processIncomingMessage();
 
-            if (bytes_consumed == 0) { // no delimiter found -> close connection 
-                cout << "Message exceeds buffer size, closing connection." << '\n';
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        const auto& [ writePtr, writeLen ] = buffer.writeableSpan(); // get the starting point and length that is empty
-        size_t bytes_read = recv(newSockfd, writePtr, writeLen, 0); // write to the buffer 
-
-        if (bytes_read == -1) {
-            cout << "Read error : " << strerror(errno) << '\n';
+        if (!incomingMessage.clientStatus) {
+            std::cout << "Closing client socket file descriptor." << '\n';
+            close(newSockfd);
             break;
         }
 
-        if (bytes_read == 0) {
-            while (buffer.size() > 0) {
-                cout << "Client disconnected. Parsing the remaining buffer" << '\n';
-                const auto& [ readPtr, readLen ] = buffer.peek();
-                size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
-                if (bytes_consumed == 0) break;
-                buffer.consume(bytes_consumed);
-                cout << "Parser has consumed: " << bytes_consumed << '\n';
-            }
-
-            break;
+        if (incomingMessage.inboundRequests.empty()) {
+            continue;
         }
         
-        cout << "Current buffer size: " << buffer.size() << '\n';
-        cout << "Writeable length: " << writeLen << '\n';
-        cout << "Read :" << bytes_read << " bytes" << '\n';
-        buffer.commitWrite(bytes_read); // update the head pointer's position 
-        
-        const auto& [ readPtr, readLen ] = buffer.peek();
-        cout << "Peeked: " << readLen << '\n';
-        size_t bytes_consumed = parser.consumeBytes(readPtr, readLen);
-        if (bytes_consumed > 0) {
-            buffer.consume(bytes_consumed);
-            cout << "Parser has consumed: " << bytes_consumed << '\n';
+        for (Request inboundRequest : incomingMessage.inboundRequests) {
+            requestQueue.push(inboundRequest);
         }
 
+        map.processRequestQueue(requestQueue);
+        
     }
 
+    close(sockfd); 
     return 0;
 } 

@@ -1,0 +1,10 @@
+# Compiled Files
+/a.out
+/client
+/server
+
+# Object Files 
+*.o
+
+# Editor / IDE
+.vscode/
