@@ -2,7 +2,8 @@
 
 void RedisMap::processRequestQueue(std::queue<Request>& requestQueue) {
     while (!requestQueue.empty()) {
-       //PROCESS THE ELEMENTS 
+        performRequest(requestQueue.front());
+        requestQueue.pop();
     }
 }
 

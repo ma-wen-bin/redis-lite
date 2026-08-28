@@ -6,12 +6,14 @@
 #include <algorithm>  
 #include <unordered_map>
 #include <optional>
+#include <iostream>
+#include "../request.h"
 
 struct ParsedMessage {
     std::optional<Request> req;
     size_t parsedBytes {0};
-    ParsedMessage();
-    ParsedMessage(size_t parsedBytes) : parsedBytes(parsedBytes) {}
+    ParsedMessage() {};
+    ParsedMessage(size_t parsedBytes) : parsedBytes(parsedBytes) {};
 };
 
 enum class RespType {

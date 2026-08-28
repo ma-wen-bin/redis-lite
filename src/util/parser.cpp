@@ -1,8 +1,4 @@
-#include <vector>
-#include <cstdint>
-#include <cstddef>
-#include <algorithm>
-#include <iostream>
+
 #include "parser.h"
 #include "../request.h"
 
@@ -36,7 +32,7 @@ uint8_t *MessageParser::getLastPointer(uint8_t *readPtr, size_t length) { // ret
         };
     }
 
-    return 0;
+    return nullptr;
 }
 
 ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
@@ -66,18 +62,17 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
             data.resize(termPtr - readPtr);
             std::copy(readPtr, termPtr, data.begin());
             std::cout << "DATA IS: " << data << '\n';
-            std::cout << "REQUEST IS " << req.getStringType() << '\n';
+            std::cout << "REQUEST TYPE IS " << req.getStringType() << '\n';
             if (data == "GET" || data == "SET" || data == "DEL") {
                 std::cout << "setting type: " << data << '\n';
                 req.setType(data);
-                req.addArgument(data); 
             } else {
                 req.addArgument(data);   
                 std::cout << "Added arg: " << data << '\n';             
             }
 
             if (req.isComplete()) {
-                std::cout << "Request is completed. Executing..." << '\n';
+                std::cout << "Request is created." << '\n';
                 parsedMessage.req = req;
                 req.reset();
             }
@@ -97,8 +92,7 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
 
     // get the last pointer BEFORE the terminator
     uint8_t *lastPtr = getLastPointer(readPtr, length);
-    if (lastPtr == 0) { 
-        parsedMessage.parsedBytes = 0;
+    if (lastPtr == nullptr) { 
         return parsedMessage; 
     }
 
@@ -141,5 +135,5 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
         // any other response types -> return response is not configured?
     }
 
-    return 0;
+    return parsedMessage;
 }

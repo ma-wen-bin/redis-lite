@@ -16,7 +16,6 @@ struct addrinfo hints; // struct that contains information of the connection
 struct addrinfo *servInfo; // pointer to the results
 struct sockaddr_storage clientAddr;
 int newSockfd; //new socket file descriptor (client's)
-Connection connection;
 RedisMap map;
 std::queue<Request> requestQueue;
 
@@ -60,21 +59,22 @@ int main() {
     while(true) {
         IncomingMessage incomingMessage = connection.processIncomingMessage();
 
-        if (!incomingMessage.clientStatus) {
-            std::cout << "Closing client socket file descriptor." << '\n';
-            close(newSockfd);
-            break;
-        }
-
         if (incomingMessage.inboundRequests.empty()) {
             continue;
         }
         
         for (Request inboundRequest : incomingMessage.inboundRequests) {
+            std::cout << "Processing inbound requests" << '\n';
             requestQueue.push(inboundRequest);
         }
 
         map.processRequestQueue(requestQueue);
+
+        if (!incomingMessage.clientStatus) {
+            std::cout << "Closing client socket file descriptor." << '\n';
+            close(newSockfd);
+            break;
+        }
         
     }
 
