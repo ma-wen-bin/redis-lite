@@ -1,10 +1,11 @@
 #include "redis_map.h"
 
-void RedisMap::processRequestQueue(std::queue<Request>& requestQueue) {
+std::vector<Response> RedisMap::processRequestQueue(std::queue<Request>& requestQueue) {
     while (!requestQueue.empty()) {
         performRequest(requestQueue.front());
         requestQueue.pop();
     }
+    return processedResponses;
 }
 
 void RedisMap::performRequest(const Request &request)
@@ -32,6 +33,7 @@ void RedisMap::setKeyValue(const Request &request)
     {
         redisMap[request.getKey()] = request.getValue();
         std::cout << "Key: " << request.getKey() << " with value: " << request.getValue() << " was inserted." << '\n';
+        processedResponses.push_back(Response(RespType::BulkString, "OK"))
     }
 }
 
@@ -43,11 +45,10 @@ void RedisMap::getValue(const Request &request)
         auto iterator = redisMap.find(request.getKey());
         if (iterator != redisMap.end()) {
             std::string value = redisMap[request.getKey()];
-            std::cout << "Key: " << request.getKey() << " with value: " << request.getValue() << " was retrieved." << '\n';
-            //SEND MESSAGE 
+            std::cout << "Key: " << request.getKey() << " with value: " << value << " was retrieved." << '\n';
+            processedResponses.push_back(Response(RespType::SimpleString, value));
             return;
         }
-
         std::cout << "Key: " << request.getKey() << " does not exist." << '\n';
     }
 }
@@ -64,7 +65,9 @@ void RedisMap::deleteValue(const Request &request)
     if (removed)
     {
         std::cout << "Key: " << request.getKey() << " was successfully deleted." << '\n';
+        processedResponses.push_back(Response(RespType::Integer, 1)); //DELTETION TOOK PLACE
         return;
     }
     std::cout << "Key: " << request.getKey() << " does not exist." << '\n';
+    processedResponses.push_back(Response(RespType::Integer, 0)); //NO DELETEION TOOK PLACE
 }

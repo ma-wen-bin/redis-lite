@@ -34,7 +34,10 @@ int main() {
     }
     cout << "Connected to server!" << '\n';
 
-    std::string message = "*3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n";
+
+    //SET "hello":"world" -> *3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n
+    //GET "hello" -> *2\r\n$3\r\nGET\r\n$5\r\nhello\r\n
+    std::string message = "*3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n";
     
     int bytes_sent = 0;
     while (bytes_sent < message.length()) {

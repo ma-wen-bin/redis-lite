@@ -18,7 +18,13 @@ struct sockaddr_storage clientAddr;
 int newSockfd; //new socket file descriptor (client's)
 RedisMap map;
 std::queue<Request> requestQueue;
+std::queue<Response> responseQueue;
+std::unordered_map<int, Connection> connectionMap;
 
+struct QueuedRequest {
+    Request req;
+    int socketFd;
+};
 
 int main() {
     
@@ -54,6 +60,7 @@ int main() {
         return errno;
     }
     Connection connection = Connection(newSockfd);
+    connectionMap[newSockfd] = connection;
     
     //RECEIVE INCOMING MESSAGES
     while(true) {
@@ -68,7 +75,11 @@ int main() {
             requestQueue.push(inboundRequest);
         }
 
-        map.processRequestQueue(requestQueue);
+        std::vector<Response> responses = map.processRequestQueue(requestQueue);
+        for (Response response : responses) {
+            
+        }
+
 
         if (!incomingMessage.clientStatus) {
             std::cout << "Closing client socket file descriptor." << '\n';
