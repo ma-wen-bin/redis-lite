@@ -77,7 +77,7 @@ int main() {
 
         std::vector<Response> responses = map.processRequestQueue(requestQueue);
         for (Response response : responses) {
-            
+            connection.enqueueResponseMesage(response.serialize());
         }
 
 

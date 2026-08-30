@@ -19,6 +19,7 @@ class Response {
     Response(RespType t, int num) : type(t), val(num) {};
     Response(RespType t, std::string data) : type(t), data(data) {};
     RespType getRespType();
+    std::vector<uint8_t> serialize();
     
 
 };
