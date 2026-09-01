@@ -2,13 +2,14 @@
 #include <unordered_map>
 #include <string>
 #include <queue>
+#include <charconv>
 #include "request.h"
 #include "response.h"
 
 class RedisMap {
     private:
     inline static std::unordered_map<std::string, std::string> redisMap;
-    std::vector<Response> response; 
+    std::vector<Response> processedResponses; 
 
     public:
     std::vector<Response> processRequestQueue(std::queue<Request>& requestQueue);

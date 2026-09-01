@@ -15,12 +15,11 @@ class Connection {
     int clientSocketFD;
     MessageParser parser;
     std::vector<Request> inboundRequests;
-    
 
     public:
     Connection(int clientSockfd) : clientSocketFD(clientSockfd), incomingBuffer(8192), outgoingBuffer(8192) {};
     IncomingMessage processIncomingMessage();
     void processOutgoingMessage();
-    void enqueueResponseMesage(const std::vector<uint8_t>& responseBytes);
+    void enqueueResponseMessage(const std::vector<uint8_t>& responseBytes);
 
 };

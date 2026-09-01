@@ -59,8 +59,8 @@ int main() {
     if (newSockfd == -1) {
         return errno;
     }
-    Connection connection = Connection(newSockfd);
-    connectionMap[newSockfd] = connection;
+    connectionMap.emplace(newSockfd, Connection(newSockfd));
+    Connection& connection = connectionMap.at(newSockfd);
     
     //RECEIVE INCOMING MESSAGES
     while(true) {
