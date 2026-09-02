@@ -28,6 +28,11 @@ using namespace std;
         return {headptr, length};
     }
 
+    void RingBuffer::insert(const std::vector<uint8_t>& bytes, int offset, const size_t length) {
+        std::copy(bytes.begin() + offset, bytes.begin() + offset + length, buffer.begin() + head);
+        commitWrite(length);
+    }
+
     //update head pointer 
     void RingBuffer::commitWrite(size_t bytesRead) {
         head = (head + bytesRead) % max_size;

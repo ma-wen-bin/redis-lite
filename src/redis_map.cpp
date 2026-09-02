@@ -1,14 +1,5 @@
 #include "redis_map.h"
 
-bool RedisMap::isNumber(const std::string& str) {
-    if (str.empty()) {
-        return false;
-    }
-    int result;
-    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-    return ec == std::errc() && ptr == str.data() + str.size();
-}
-
 std::vector<Response> RedisMap::processRequestQueue(std::queue<Request>& requestQueue) {
     while (!requestQueue.empty()) {
         performRequest(requestQueue.front());

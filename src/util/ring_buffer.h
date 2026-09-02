@@ -16,6 +16,7 @@ class RingBuffer {
     public:
     RingBuffer(size_t size);
     std::pair<uint8_t*, size_t> writeableSpan();
+    void insert(const std::vector<uint8_t>& bytes, int offset, const size_t length);
     void commitWrite(size_t bytesRead);
     std::pair<uint8_t*, size_t> peek();
     void consume(size_t bytes);

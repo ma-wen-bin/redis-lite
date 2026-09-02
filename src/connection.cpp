@@ -78,6 +78,24 @@ IncomingMessage Connection::processIncomingMessage()
     return incomingMessage;
 }
 
+
+void Connection::enqueueResponseMessage(const std::vector<uint8_t>& responseBytes) {
+
+    size_t offset = 0;
+    while (offset < responseBytes.size()) {
+        if (outgoingBuffer.isFull()) {
+            processOutgoingMessage();
+        }
+
+        const auto &[writePtr, writeLen] = outgoingBuffer.writeableSpan();
+        size_t chunk = std::min(writeLen, responseBytes.size() - offset);
+        if (chunk == 0) processOutgoingMessage();
+        outgoingBuffer.insert(responseBytes, offset, chunk);
+        offset += chunk;
+    }
+
+}
+
 // PROCESS OUTGOING MESSAGES 
 void Connection::processOutgoingMessage() {
     if (outgoingBuffer.isFull()) {
