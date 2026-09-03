@@ -33,7 +33,7 @@ void RedisMap::setKeyValue(const Request &request)
     {
         redisMap[request.getKey()] = request.getValue();
         std::cout << "Key: " << request.getKey() << " with value: " << request.getValue() << " was inserted." << '\n';
-        processedResponses.push_back(Response(RespType::SimpleString, "OK"));
+        processedResponses.push_back(Response(ResponseRespType::SimpleString, "OK"));
     }
 }
 
@@ -46,7 +46,7 @@ void RedisMap::getValue(const Request &request)
         if (iterator != redisMap.end()) {
             std::string value = redisMap[request.getKey()];
             std::cout << "Key: " << request.getKey() << " with value: " << value << " was retrieved." << '\n';
-            processedResponses.push_back(Response(RespType::BulkString, value));
+            processedResponses.push_back(Response(ResponseRespType::BulkString, value));
             return;
         }
         std::cout << "Key: " << request.getKey() << " does not exist." << '\n';
@@ -65,9 +65,9 @@ void RedisMap::deleteValue(const Request &request)
     if (removed)
     {
         std::cout << "Key: " << request.getKey() << " was successfully deleted." << '\n';
-        processedResponses.push_back(Response(RespType::Integer, 1)); //DELTETION TOOK PLACE
+        processedResponses.push_back(Response(ResponseRespType::Integer, 1)); //DELTETION TOOK PLACE
         return;
     }
     std::cout << "Key: " << request.getKey() << " does not exist." << '\n';
-    processedResponses.push_back(Response(RespType::Integer, 0)); //NO DELETEION TOOK PLACE
+    processedResponses.push_back(Response(ResponseRespType::Integer, 0)); //NO DELETEION TOOK PLACE
 }

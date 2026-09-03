@@ -1,10 +1,12 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <stdint.h>
 #include <unordered_map>
 #include <cassert>
 
-enum class RespType {
+enum class ResponseRespType {
     SimpleString, 
     SimpleError,
     Integer,
@@ -16,25 +18,25 @@ enum class RespType {
 
 class Response {
     private:
-    RespType type;
+    ResponseRespType type;
     int val;
     std::string data;
     const std::vector<uint8_t> TERMINATOR = {'\r', '\n'};
-    std::unordered_map<const RespType, uint8_t> respMap = {
-        { RespType::SimpleString , '+' },
-        { RespType::SimpleError , '-' },
-        { RespType::Integer , ':' },
-        { RespType::BulkString , '$' },
+    std::unordered_map<const ResponseRespType, uint8_t> respMap = {
+        { ResponseRespType::SimpleString , '+' },
+        { ResponseRespType::SimpleError , '-' },
+        { ResponseRespType::Integer , ':' },
+        { ResponseRespType::BulkString , '$' },
     };
 
     public:
-    Response(RespType t, int num) : type(t), val(num) {
-        assert(t == RespType::Integer && "int constructor is only valid for RespType::Integer");
+    Response(ResponseRespType t, int num) : type(t), val(num) {
+        assert(t == ResponseRespType::Integer && "int constructor is only valid for ResponseRespType::Integer");
     };
-    Response(RespType t, std::string data) : type(t), data(std::move(data)) {
-        assert(t != RespType::Integer && "RespType::Integer must use the int constructor, not string");
+    Response(ResponseRespType t, std::string data) : type(t), data(std::move(data)) {
+        assert(t != ResponseRespType::Integer && "ResponseRespType::Integer must use the int constructor, not string");
     };
-    RespType getRespType();
+    ResponseRespType getRespType();
     std::vector<uint8_t> serialize();
     
 

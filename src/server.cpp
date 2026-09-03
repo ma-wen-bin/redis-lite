@@ -45,7 +45,10 @@ int main() {
 
     //BIND THE SOCKET
     int bindStatus = bind(sockfd, servInfo->ai_addr, servInfo->ai_addrlen);
+    const int optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
     if (bindStatus == -1) {
+        std::cout << "Failed to bind: " << strerror(errno) << '\n';
         return errno;
     }
     freeaddrinfo(servInfo); //free the heap allocated linked-lists after binding
@@ -77,10 +80,12 @@ int main() {
 
         std::vector<Response> responses = map.processRequestQueue(requestQueue);
         for (Response response : responses) {
-            connection.enqueueResponseMesage(response.serialize());
+            std::cout << "Processing outbound requests" << '\n';
+            connection.enqueueResponseMessage(response.serialize());
         }
-
-
+        
+        connection.processOutgoingMessage();
+        
         if (!incomingMessage.clientStatus) {
             std::cout << "Closing client socket file descriptor." << '\n';
             close(newSockfd);

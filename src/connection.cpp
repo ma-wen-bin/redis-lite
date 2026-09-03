@@ -62,18 +62,25 @@ IncomingMessage Connection::processIncomingMessage()
     std::cout << "Read :" << bytes_read << " bytes" << '\n';
     incomingBuffer.commitWrite(bytes_read); // update the head pointer's position
 
-    const auto &[readPtr, readLen] = incomingBuffer.peek();
-    std::cout << "Peeked: " << readLen << '\n';
-    ParsedMessage parsedMessage = parser.consumeBytes(readPtr, readLen);
-    if (parsedMessage.req) {
-        incomingMessage.inboundRequests.push_back(*parsedMessage.req);
-    }
-    
-    if (parsedMessage.parsedBytes > 0)
-    {
+    while (true) {
+
+        const auto &[readPtr, readLen] = incomingBuffer.peek();
+        std::cout << "Peeked: " << readLen << '\n';
+        ParsedMessage parsedMessage = parser.consumeBytes(readPtr, readLen);
+        if (parsedMessage.req) {
+            incomingMessage.inboundRequests.push_back(*parsedMessage.req);
+        }
+        
+        if (parsedMessage.parsedBytes == 0) {
+            break;
+        }
+
         incomingBuffer.consume(parsedMessage.parsedBytes);
         std::cout << "Parser has consumed: " << parsedMessage.parsedBytes << '\n';
+
     }
+ 
+
 
     return incomingMessage;
 }
@@ -98,7 +105,10 @@ void Connection::enqueueResponseMessage(const std::vector<uint8_t>& responseByte
 
 // PROCESS OUTGOING MESSAGES 
 void Connection::processOutgoingMessage() {
-    if (outgoingBuffer.isFull()) {
-
+    std::cout << "outgoing buffer size: " << outgoingBuffer.size() << '\n'; 
+    while (!outgoingBuffer.isEmpty()) {
+        const auto &[readPtr, readLen] = outgoingBuffer.peek();
+        int bytes_sent = send(clientSocketFD, readPtr, readLen, 0);
+        outgoingBuffer.consume(bytes_sent);
     }
 }

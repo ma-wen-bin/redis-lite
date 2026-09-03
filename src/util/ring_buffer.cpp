@@ -58,7 +58,7 @@ using namespace std;
         if (head > tail) {
             length = head - tail;
         } else {
-            length = (max_size - tail) + head;
+            length = max_size - tail; // contiguous run only; caller loops for the rest after wrap
         }
         
         return {tailptr, length};
