@@ -37,6 +37,7 @@ uint8_t *MessageParser::getLastPointer(uint8_t *readPtr, size_t length) { // ret
 
 ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
     ParsedMessage parsedMessage;
+    
     // PROCESS NULL OR EMPTY BULK STRING
     if (EMPTY_BULK_STRING)
     {
@@ -61,16 +62,16 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
             std::string data;
             data.resize(termPtr - readPtr);
             std::copy(readPtr, termPtr, data.begin());
-            std::cout << "DATA IS: " << data << '\n';
-            std::cout << "REQUEST TYPE IS " << req.getStringType() << '\n';
-            if (data == "GET" || data == "SET" || data == "DEL") {
-                std::cout << "setting type: " << data << '\n';
-                req.setType(data);
-            } else {
-                req.addArgument(data);   
-                std::cout << "Added arg: " << data << '\n';             
+            std::cout << "CURRENT TOKEN IS: " << data << '\n';
+            
+            auto iterator = commandTable.find(data);
+            if (iterator != commandTable.end()) { // IF ITS A COMMAND
+                req.setType(iterator->second.type);
+            } else { // IF ITS AN ARG
+                req.addArgument(data);
+                std::cout << "Added arg: " << data << '\n';   
             }
-
+            
             if (req.isComplete()) {
                 std::cout << "Request is created." << '\n';
                 parsedMessage.req = req;

@@ -6,6 +6,10 @@ RedisObjectType RedisObject::getType() const {
 }
 
 //STRING METHODS
+std::string RedisObjectString::setValue(const std::string& val) {
+    value = val;
+}
+
 std::string RedisObjectString::getValue() const {
     return value;
 }
@@ -100,7 +104,7 @@ int RedisObjectSet::scard() const {
     return set.size();
 }
 
-int RedisObjectSet::isMember(const std::string& element) const {
+int RedisObjectSet::sisMember(const std::string& element) const {
     if (set.find(element) != set.end()) return 1;
     return 0;
 }

@@ -31,6 +31,7 @@ class RedisObjectString : public RedisObject {
     std::string value;
 
     public:
+    std::string setValue(const std::string& val);
     std::string getValue() const;
     int strlen() const;
     int append(const std::string& value);
@@ -73,11 +74,11 @@ class RedisObjectSet : public RedisObject {
     std::unordered_set<std::string> set;
     
     public:
-    int sadd(const std::vector<std::string>& elements) const; //returns the number of elements that were added to the set, not including all the elements already present in the set.
-    int srem(const std::vector<std::string>& elements) const; //returns the number of members that were removed from the set, not including non existing members.
+    int sadd(const std::vector<std::string>& elements); //returns the number of elements that were added to the set, not including all the elements already present in the set.
+    int srem(const std::vector<std::string>& elements); //returns the number of members that were removed from the set, not including non existing members.
     std::vector<std::string> smembers() const; //returns an array with all the members of the set.
     int scard() const; //returns the cardinality (number of elements) of the set.
-    int isMember(const std::string& element) const; //returns 0 if the element is not a member of the set OR 1 if the element is a member of the set.
+    int sisMember(const std::string& element) const; //returns 0 if the element is not a member of the set OR 1 if the element is a member of the set.
 
     RedisObjectSet() : RedisObject(RedisObjectType::Set) {};
     RedisObjectSet(const std::unordered_set<std::string>& s) : RedisObject(RedisObjectType::Set), set(s) {};
