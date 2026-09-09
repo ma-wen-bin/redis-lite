@@ -51,7 +51,6 @@ class RedisObjectList : public RedisObject {
     std::vector<std::string> lrange(int startIndex, int stopIndex); //a list of elements in the specified range.
 
     RedisObjectList() : RedisObject(RedisObjectType::List) {};
-    RedisObjectList(const std::deque<std::string>& l) : RedisObject(RedisObjectType::List), list(l) {};
 };
 
 // HASH (child)
@@ -60,7 +59,7 @@ class RedisObjectHash : public RedisObject {
     std::unordered_map<std::string, std::string> hashMap;
     
     public:
-    int hdel(const std::string& key); //returns the number of fields that were removed from the hash, excluding any specified but non-existing fields.
+    int hdel(const std::vector<std::string>& keys); //returns the number of fields that were removed from the hash, excluding any specified but non-existing fields.
     int hset(const std::string& key, const std::string& value); //returns the number of fields that were added.
     std::pair<std::string, int> hget(const std::string& key) const; //returns the value associated with the field OR '-1' if the field is not present in the hash or key does not exist.
 

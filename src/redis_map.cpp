@@ -82,6 +82,7 @@ void RedisMap::get(const Request &request) {
                 std::cout << "Key: " << request.getKey() << " with value: " << value << " was retrieved." << '\n';
                 processedResponses.push_back(Response(ResponseRespType::BulkString, value));
             }
+            processedResponses.push_back(Response(ResponseRespType::Nil));
             std::cout << "Redis object retireved does not exist!" << '\n';
         }
     }
@@ -144,7 +145,154 @@ void RedisMap::append(const Request &request) {
         processedResponses.push_back(Response(ResponseRespType::Integer, 0)); 
     }
 }
-
 ////////// BASIC OPERATIONS (END)
 
 
+
+////////// lIST OPERATIONS (START)
+void RedisMap::lpush(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        std::vector<std::string> elements(request.getArguments().begin() + 1, request.getArguments().end());
+        std::shared_ptr<RedisObjectList> listObjectPtr;
+        if (iterator == redisMap.end()) {
+            listObjectPtr = std::make_shared<RedisObjectList>();
+            redisMap[request.getKey()] = listObjectPtr;
+        } else {
+            listObjectPtr = std::dynamic_pointer_cast<RedisObjectList>(iterator->second);
+        }
+
+        processedResponses.push_back(Response(ResponseRespType::Integer, listObjectPtr->lpush(elements))); 
+    }
+}
+
+void RedisMap::rpush(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        std::vector<std::string> elements(request.getArguments().begin() + 1, request.getArguments().end());
+        std::shared_ptr<RedisObjectList> listObjectPtr;
+        if (iterator == redisMap.end()) {
+            listObjectPtr = std::make_shared<RedisObjectList>();
+            redisMap[request.getKey()] = listObjectPtr;
+        } else {
+            listObjectPtr = std::dynamic_pointer_cast<RedisObjectList>(iterator->second);
+        }
+        
+        processedResponses.push_back(Response(ResponseRespType::Integer, listObjectPtr->rpush(elements))); 
+    }
+}
+
+void RedisMap::lrange(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator == redisMap.end()) {
+            processedResponses.push_back(Response(ResponseRespType::Array, "[]"));
+            return;
+        }
+        std::shared_ptr<RedisObjectList> listObjectPtr = std::dynamic_pointer_cast<RedisObjectList>(iterator->second);
+        int startIndex = std::stoi(request.getArguments()[1]);
+        int stopIndex = std::stoi(request.getArguments()[2]);
+        processedResponses.push_back(Response(ResponseRespType::Array, listObjectPtr->lrange(startIndex, stopIndex)));
+    }
+}
+////////// lIST OPERATIONS (END)
+
+
+
+////////// HASH OPERATIONS (START)
+void RedisMap::hdel(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        std::vector<std::string> keys(request.getArguments().begin() + 2, request.getArguments().end());
+        if (iterator != redisMap.end()) {
+            std::shared_ptr<RedisObjectHash> hashObjectPtr = std::dynamic_pointer_cast<RedisObjectHash>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, hashObjectPtr->hdel(keys))); 
+        }
+        processedResponses.push_back(Response(ResponseRespType::Integer, 0)); 
+    }
+}
+
+void RedisMap::hset(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::string key = request.getArguments()[2];
+            std::string val = request.getArguments()[3];
+
+            std::shared_ptr<RedisObjectHash> hashObjectPtr = std::dynamic_pointer_cast<RedisObjectHash>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, hashObjectPtr->hset(key, val))); 
+        }
+    }
+}
+
+void RedisMap::hget(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::shared_ptr<RedisObjectHash> hashObjectPtr = std::dynamic_pointer_cast<RedisObjectHash>(iterator->second);
+            std::pair<std::string, int> result = hashObjectPtr->hget(request.getArguments()[2]);
+            if (result.first.empty()) {
+                processedResponses.push_back(Response(ResponseRespType::Integer, result.second));
+                return;
+            }  
+            processedResponses.push_back(Response(ResponseRespType::BulkString, result.first));
+        }
+    }
+}
+////////// HASH OPERATIONS (END)
+
+
+
+////////// SET OPERATIONS (START)
+void RedisMap::sadd(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::vector<std::string> elements(request.getArguments().begin() + 2, request.getArguments().end());
+            std::shared_ptr<RedisObjectSet> setObjectPtr = std::dynamic_pointer_cast<RedisObjectSet>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->sadd(elements)));
+        }
+    }
+}
+
+void RedisMap::srem(const Request &request) {
+        if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::vector<std::string> elements(request.getArguments().begin() + 2, request.getArguments().end());
+            std::shared_ptr<RedisObjectSet> setObjectPtr = std::dynamic_pointer_cast<RedisObjectSet>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->srem(elements)));
+        }
+    }
+}
+
+void RedisMap::smembers(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::shared_ptr<RedisObjectSet> setObjectPtr = std::dynamic_pointer_cast<RedisObjectSet>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Array, setObjectPtr->smembers()));
+        }
+    }
+}
+
+void RedisMap::scard(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::shared_ptr<RedisObjectSet> setObjectPtr = std::dynamic_pointer_cast<RedisObjectSet>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->scard()));
+        }
+    }
+}
+
+void RedisMap::sismember(const Request &request) {
+    if (!request.getKey().empty()) {
+        auto iterator = redisMap.find(request.getKey());
+        if (iterator != redisMap.end()) {
+            std::shared_ptr<RedisObjectSet> setObjectPtr = std::dynamic_pointer_cast<RedisObjectSet>(iterator->second);
+            processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->sisMember(request.getArguments()[2])));
+        }
+    }
+}
+////////// SET OPERATIONS (END)

@@ -41,6 +41,7 @@ class RedisMap {
     
     // SET OPERATIONS
     void sadd(const Request &request);
+    void srem(const Request &request);
     void smembers(const Request &request);
     void scard(const Request &request);
     void sismember(const Request &request);

@@ -47,6 +47,7 @@ inline static const std::unordered_map<std::string, CommandSpec> commandTable {
     {"HSET", {RequestType::HSET, 3, 3}},
     {"HGET", {RequestType::HGET, 2, 2}},
     {"SADD", {RequestType::SADD, 2, INT_MAX}},
+    {"SREM", {RequestType::SREM, 2, INT_MAX}},
     {"SMEMBERS", {RequestType::SMEMBERS, 1, 1}},
     {"SCARD", {RequestType::SCARD, 1, 1}},
     {"SISMEMBER", {RequestType::SISMEMBER, 2, 2}},

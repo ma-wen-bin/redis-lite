@@ -54,11 +54,15 @@ std::vector<std::string> RedisObjectList::lrange(int startIndex, int stopIndex) 
 }
 
 //HASH METHODS 
-int RedisObjectHash::hdel(const std::string& key) {
-    auto iterator = hashMap.find(key);  
-    if (iterator == hashMap.end()) return 0;
-    hashMap.erase(key);
-    return 1;
+int RedisObjectHash::hdel(const std::vector<std::string>& keys) {
+    int total {0};
+    for (std::string key : keys) {
+        auto iterator = hashMap.find(key);
+        if (iterator == hashMap.end()) continue;
+        hashMap.erase(key);
+        ++total;
+    }
+    return total;
 }
 
 int RedisObjectHash::hset(const std::string& key, const std::string& value) {
