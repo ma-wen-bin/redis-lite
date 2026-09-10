@@ -1,25 +1,31 @@
 #include "request.h"
 
-void Request::setType(const RequestType &t)
-{   
-    type = t;
-}
 
-void Request::setType(std::string& t) {
-    auto iterator = commandTable.find(t);
-    if (iterator != commandTable.end()) {
-        type = iterator->second.type;
-        spec = &iterator->second;
-        return;
-    }
+bool Request::setCommand(const std::string& token) {
+    commandName = token;
+    auto iterator = commandTable.find(token);
+    if (iterator == commandTable.end()) return false;
 
-    throw std::invalid_argument("Provided string does not match any valid request type!"); 
+    type = iterator->second.type;
+    spec = &iterator->second;
+    return true;
 }
 
 void Request::addArgument(std::string arg)
 {
     args.emplace_back(arg);
 }
+
+void Request::setError(std::string message)
+{
+    errorMessage = std::move(message);
+}
+
+bool Request::hasError() const { return !errorMessage.empty(); }
+
+const std::string& Request::getError() const { return errorMessage; }
+
+const std::string& Request::getCommandName() const { return commandName; }
 
 std::string Request::getKey() const
 {
@@ -41,5 +47,8 @@ bool Request::isComplete() const
 
 void Request::reset() {
     type = RequestType::NONE;
+    spec = nullptr;
+    commandName.clear();
+    errorMessage.clear();
     args.clear();
 }

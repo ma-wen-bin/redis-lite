@@ -1,3 +1,4 @@
+#pragma once
 #include "util/ring_buffer.h"
 #include "util/parser.h"
 #include "request.h"

@@ -6,7 +6,12 @@ std::vector<Response> RedisMap::processRequest(const Request& request) {
 }
 
 void RedisMap::performRequest(const Request &request)
-{   
+{
+    if (request.hasError()) {
+        processedResponses.push_back(Response(ResponseRespType::SimpleError, request.getError()));
+        return;
+    }
+
     switch (request.getType()) {
         
         // BASIC OPERATIONS
@@ -100,6 +105,7 @@ void RedisMap::set(const Request &request) {
         if (stringObjectPtr != nullptr) {
             stringObjectPtr->setValue(request.getArguments()[1]);
             std::cout << "Key: " << request.getKey() << " updated with value: " << request.getArguments()[1] << '\n';
+            processedResponses.push_back(Response(ResponseRespType::SimpleString, "OK"));
             return;
         }
         redisMap[request.getKey()] = std::make_shared<RedisObjectString>(request.getArguments()[1]);

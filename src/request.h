@@ -7,13 +7,6 @@
 #include <vector>
 #include <climits>
 
-
-struct CommandSpec {
-    RequestType type;
-    int minArgs;
-    int maxArgs;
-};
-
 enum class RequestType {
     GET, 
     SET,
@@ -32,6 +25,12 @@ enum class RequestType {
     SCARD,
     SISMEMBER,
     NONE
+};
+
+struct CommandSpec {
+    RequestType type;
+    int minArgs;
+    int maxArgs;
 };
 
 inline static const std::unordered_map<std::string, CommandSpec> commandTable {
@@ -57,17 +56,21 @@ class Request {
     private:
     const CommandSpec* spec = nullptr;
     RequestType type;
-    std::vector<std::string> args; 
+    std::string commandName;
+    std::string errorMessage;
+    std::vector<std::string> args;
 
     public:
     Request() : type(RequestType::NONE) {};
     Request(RequestType& t) : type(t) {
         std::cout << "Initialised new request object" << '\n';
     };
-
-    void setType(const RequestType& t);
-    void setType(std::string& t);
+    bool setCommand(const std::string& token);
     void addArgument(std::string arg);
+    void setError(std::string message);
+    bool hasError() const;
+    const std::string& getError() const;
+    const std::string& getCommandName() const;
     std::string getKey() const;
     std::vector<std::string> getArguments() const;
     RequestType getType() const;

@@ -63,14 +63,20 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
             std::copy(readPtr, termPtr, data.begin());
             std::cout << "CURRENT TOKEN IS: " << data << '\n';
             
-            auto iterator = commandTable.find(data);
-            if (iterator != commandTable.end()) { // IF ITS A COMMAND
-                req.setType(iterator->second.type);
-            } else { // IF ITS AN ARG
+
+            if (EXPECTING_COMMAND) {
+                EXPECTING_COMMAND = false;
+                if (!req.setCommand(data)) {
+                    std::cout << "Unknown command: " << data << "\n";
+                    req.setError("ERR unknown command '" + data + "'");
+                } else {
+                    std::cout << "Command: " << data << "\n";
+                }
+            } else {
                 req.addArgument(data);
-                std::cout << "Added arg: " << data << '\n';   
+                std::cout << "Added arg: " << data << '\n';
             }
-            
+
             parsedBytes += expectedMessageLength;
             expectedMessageLength = 0; // reset expected message length
 
@@ -78,11 +84,11 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
                 --expectedElements;
                 if (expectedElements == 0) {
                     PROCESSING_ARRAY = false;
-                    if (req.isComplete()) {
-                        parsedMessage.req = req;
-                    } else {
-                        std::cout << "Wrong number of args for this command, Dropping!" << '\n';
+                    if (!req.hasError() && !req.isComplete()) {
+                        req.setError("ERR wrong number of arguments for '" + req.getCommandName() + "' command");
+                        std::cout << "Wrong number of args for this command!" << '\n';
                     }
+                    parsedMessage.req = req; // always emit so the client gets a reply (value or error)
                     req.reset();
                 }
             } else {
@@ -126,6 +132,7 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
     {                                             // if new array message
         expectedElements = getValue(destination); // number of elements that should be in array
         PROCESSING_ARRAY = true;                  // set the state machine to true
+        EXPECTING_COMMAND = true;
         parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
         return parsedMessage;             // the number of bytes read
     }

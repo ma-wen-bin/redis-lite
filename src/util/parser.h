@@ -32,6 +32,7 @@ class MessageParser {
     int expectedElements = 0;
     bool PROCESSING_ARRAY = false;
     bool EMPTY_BULK_STRING = false;
+    bool EXPECTING_COMMAND = false;
     int expectedMessageLength = 0;
     std::vector<uint8_t> destination;
     std::unordered_map<uint8_t, const RespType> respMap = {

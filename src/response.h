@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <vector>
 #include <stdint.h>
@@ -38,19 +37,19 @@ class Response {
         assert(t == ResponseRespType::Integer && "Int constructor is only valid for ResponseRespType::Integer");
     };
 
-    // STRING CONSTRUCTOR 
+    // STRING CONSTRUCTOR (simple string / simple error / bulk string all carry a string payload)
     Response(ResponseRespType t, std::string data) : type(t), data(std::move(data)) {
-        assert(t == ResponseRespType::SimpleString && "String constructor is only valid for ResponseRespType::SimpleString");
+        assert((t == ResponseRespType::SimpleString || t == ResponseRespType::SimpleError || t == ResponseRespType::BulkString) && "String constructor is only valid for SimpleString / SimpleError / BulkString");
     };
 
-    // ARRAY CONSTRUCTOR 
+    // ARRAY CONSTRUCTOR
     Response(ResponseRespType t, std::vector<std::string> vectorData) : type(t), vectorData(std::move(vectorData)) {
-        assert(t != ResponseRespType::Array && "Array constructor is only valid for ResponseRespType::Array");
+        assert(t == ResponseRespType::Array && "Array constructor is only valid for ResponseRespType::Array");
     };
 
     // NIL CONSTRUCTOR
     Response(ResponseRespType t) : type(t)  {
-        assert(t != ResponseRespType::Nil && "Nil constructor is only valid for ResponseRespType::Nil");
+        assert(t == ResponseRespType::Nil && "Nil constructor is only valid for ResponseRespType::Nil");
     };
 
     ResponseRespType getRespType();

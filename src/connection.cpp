@@ -109,6 +109,7 @@ void Connection::processOutgoingMessage() {
     while (!outgoingBuffer.isEmpty()) {
         const auto &[readPtr, readLen] = outgoingBuffer.peek();
         int bytes_sent = send(clientSocketFD, readPtr, readLen, 0);
+        std::cout << "Sent " << bytes_sent << " bytes to client" << '\n'; 
         outgoingBuffer.consume(bytes_sent);
     }
 }

@@ -31,7 +31,7 @@ class RedisObjectString : public RedisObject {
     std::string value;
 
     public:
-    std::string setValue(const std::string& val);
+    void setValue(const std::string& val);
     std::string getValue() const;
     int strlen() const;
     int append(const std::string& value);

@@ -6,7 +6,7 @@ RedisObjectType RedisObject::getType() const {
 }
 
 //STRING METHODS
-std::string RedisObjectString::setValue(const std::string& val) {
+void RedisObjectString::setValue(const std::string& val) {
     value = val;
 }
 

@@ -55,44 +55,46 @@ int main() {
 
     //LISTEN FOR INCOMING CONNECTIONS 
     int listenStatus = listen(sockfd, backlog);
-
-    //ACCEPT INCOMING CONNECTIONS 
-    socklen_t addr_size = sizeof(clientAddr);
-    newSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &addr_size);
-    if (newSockfd == -1) {
-        return errno;
-    }
-    connectionMap.emplace(newSockfd, Connection(newSockfd));
-    Connection& connection = connectionMap.at(newSockfd);
     
-    //RECEIVE INCOMING MESSAGES
-    while(true) {
-        IncomingMessage incomingMessage = connection.processIncomingMessage();
+    //CREATE ACCEPT LOOP (SINGLE-BLOCKING CONNECTION)
+    while (true) {
+        socklen_t addr_size = sizeof(clientAddr);
+        newSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &addr_size);
+        if (newSockfd == -1) return errno;
+        connectionMap.emplace(newSockfd, Connection(newSockfd));
+        Connection& connection = connectionMap.at(newSockfd);
 
-        if (incomingMessage.inboundRequests.empty()) {
-            continue;
-        }
-        
-        for (Request inboundRequest : incomingMessage.inboundRequests) {
-            std::cout << "Processing inbound requests" << '\n';
-            requestQueue.push(inboundRequest);
-        }
-
-        while (!requestQueue.empty()) {
-            std::vector<Response> responses = map.processRequest(requestQueue.front());
-            requestQueue.pop();
-            for (Response response : responses) {
-                connection.enqueueResponseMessage(response.serialize());
+        //RECEIVE INCOMING MESSAGES
+        while (true) {
+            IncomingMessage incomingMessage = connection.processIncomingMessage();
+            
+            // HANDLE CLIENT DISCONNECT
+            if (!incomingMessage.clientStatus) {
+                std::cout << "Closing client socket file descriptor." << '\n';
+                connectionMap.erase(newSockfd);
+                close(newSockfd);
+                break;
             }
-            connection.processOutgoingMessage();
+
+            if (incomingMessage.inboundRequests.empty()) {
+                continue;
+            }
+
+            for (Request inboundRequest : incomingMessage.inboundRequests) {
+                std::cout << "Processing inbound requests" << '\n';
+                requestQueue.push(inboundRequest);
+            }
+
+            while (!requestQueue.empty()) {
+                std::vector<Response> responses = map.processRequest(requestQueue.front());
+                requestQueue.pop();
+                for (Response response : responses) {
+                    connection.enqueueResponseMessage(response.serialize());
+                }
+                connection.processOutgoingMessage();
+            }
         }
-        
-        if (!incomingMessage.clientStatus) {
-            std::cout << "Closing client socket file descriptor." << '\n';
-            close(newSockfd);
-            break;
-        }
-        
+
     }
 
     close(sockfd); 
