@@ -16,10 +16,19 @@ class RedisMap {
     std::vector<Response> processedResponses; 
 
     public:
-    std::vector<Response> processRequestQueue(std::queue<Request>& requestQueue);
+    std::vector<Response> processRequest(const Request& request);
 
     // BASE HANDLER
     void performRequest(const Request &request);
+    
+    // HELPER METHOD
+    std::shared_ptr<RedisObject> findKey(const std::string& key);
+
+    // TEMPLATE METHOD (Retrieve child object)
+    template <typename T>
+    std::shared_ptr<T> getChild(const std::shared_ptr<RedisObject>& baseRedisObject) {
+        return std::dynamic_pointer_cast<T>(baseRedisObject);
+    }
 
     // BASIC OPERATIONS 
     void get(const Request &request);

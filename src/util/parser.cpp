@@ -57,8 +57,7 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
         uint8_t *termPtr = readPtr + expectedMessageLength;
 
         // ensure that terminators are present
-        if (TERMINATOR_ONE == *termPtr && TERMINATOR_TWO == *(termPtr + 1))
-        {   
+        if (TERMINATOR_ONE == *termPtr && TERMINATOR_TWO == *(termPtr + 1)) {   
             std::string data;
             data.resize(termPtr - readPtr);
             std::copy(readPtr, termPtr, data.begin());
@@ -72,19 +71,25 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
                 std::cout << "Added arg: " << data << '\n';   
             }
             
-            if (req.isComplete()) {
-                std::cout << "Request is created." << '\n';
-                parsedMessage.req = req;
-                req.reset();
-            }
-
             parsedBytes += expectedMessageLength;
             expectedMessageLength = 0; // reset expected message length
 
-            if (PROCESSING_ARRAY)
-            {
+            if (PROCESSING_ARRAY) {
                 --expectedElements;
-                if (expectedElements == 0) { PROCESSING_ARRAY = false; }
+                if (expectedElements == 0) {
+                    PROCESSING_ARRAY = false;
+                    if (req.isComplete()) {
+                        parsedMessage.req = req;
+                    } else {
+                        std::cout << "Wrong number of args for this command, Dropping!" << '\n';
+                    }
+                    req.reset();
+                }
+            } else {
+                if (req.isComplete()) {
+                    parsedMessage.req = req;
+                    req.reset();
+                }
             }
         }
         parsedMessage.parsedBytes = parsedBytes + 2;

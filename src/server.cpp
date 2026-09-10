@@ -78,13 +78,14 @@ int main() {
             requestQueue.push(inboundRequest);
         }
 
-        std::vector<Response> responses = map.processRequestQueue(requestQueue);
-        for (Response response : responses) {
-            std::cout << "Processing outbound requests" << '\n';
-            connection.enqueueResponseMessage(response.serialize());
+        while (!requestQueue.empty()) {
+            std::vector<Response> responses = map.processRequest(requestQueue.front());
+            requestQueue.pop();
+            for (Response response : responses) {
+                connection.enqueueResponseMessage(response.serialize());
+            }
+            connection.processOutgoingMessage();
         }
-        
-        connection.processOutgoingMessage();
         
         if (!incomingMessage.clientStatus) {
             std::cout << "Closing client socket file descriptor." << '\n';
