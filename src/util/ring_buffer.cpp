@@ -1,16 +1,11 @@
-#include <cstddef>
-#include <cstdint>
-#include <vector> 
 #include "ring_buffer.h"
-using namespace std;
-
     //constructor 
     RingBuffer::RingBuffer(size_t size) : max_size(size), buffer(size, 0) {
 
     };
 
     //return (headptr, writeable length)
-    pair<uint8_t*, size_t> RingBuffer::writeableSpan() {
+    std::pair<uint8_t*, size_t> RingBuffer::writeableSpan() {
 
         uint8_t* headptr = &buffer[head];
         size_t length;
@@ -42,7 +37,7 @@ using namespace std;
     }
 
     //peek for consumer 
-    pair<uint8_t*, size_t> RingBuffer::peek() {
+    std::pair<uint8_t*, size_t> RingBuffer::peek() {
 
         uint8_t* tailptr = &buffer[tail];
         size_t length;
@@ -68,6 +63,14 @@ using namespace std;
     void RingBuffer::consume(size_t bytes) {
         tail = (tail + bytes) % max_size;
         full = false;
+    }
+
+    //shift all the data into a contiguous manner to fix data wrap around issues
+    void RingBuffer::shift() {
+        size_t unreadBytes = size();
+        std::rotate(buffer.begin(), buffer.begin() + tail, buffer.end());
+        tail = 0;
+        head = unreadBytes;
     }
 
     //resetting the buffer to empty 

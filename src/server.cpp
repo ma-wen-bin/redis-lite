@@ -28,6 +28,9 @@ struct QueuedRequest {
 
 int main() {
     
+    //DISABLE COUT 
+    //std::cout.rdbuf(nullptr);
+
     //SET UP ADDRESS INFORMATION 
     memset(&hints, 0, sizeof(hints)); //ensure no garbage values 
     hints.ai_family = AF_INET; //only ipv4

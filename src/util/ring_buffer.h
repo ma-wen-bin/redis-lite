@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 class RingBuffer {
     private:
@@ -20,6 +21,7 @@ class RingBuffer {
     void commitWrite(size_t bytesRead);
     std::pair<uint8_t*, size_t> peek();
     void consume(size_t bytes);
+    void shift();
     void reset();
     bool isFull() const;
     bool isEmpty() const;

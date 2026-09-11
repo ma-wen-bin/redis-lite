@@ -67,20 +67,25 @@ IncomingMessage Connection::processIncomingMessage()
         const auto &[readPtr, readLen] = incomingBuffer.peek();
         std::cout << "Peeked: " << readLen << '\n';
         ParsedMessage parsedMessage = parser.consumeBytes(readPtr, readLen);
+        
         if (parsedMessage.req) {
             incomingMessage.inboundRequests.push_back(*parsedMessage.req);
         }
-        
+
         if (parsedMessage.parsedBytes == 0) {
-            break;
+            std::cout << "Parsed bytes is 0" << '\n';
+            if (readLen < incomingBuffer.size()) {
+                std::cout << "Shifting" << '\n';
+                incomingBuffer.shift();
+                continue;
+            }
+            break;            
         }
 
         incomingBuffer.consume(parsedMessage.parsedBytes);
         std::cout << "Parser has consumed: " << parsedMessage.parsedBytes << '\n';
 
     }
- 
-
 
     return incomingMessage;
 }
