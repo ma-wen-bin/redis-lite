@@ -1,4 +1,5 @@
 #pragma once
+#include <sys/types.h> // ssize_t
 #include "util/ring_buffer.h"
 #include "util/parser.h"
 #include "request.h"
@@ -20,7 +21,7 @@ class Connection {
     public:
     Connection(int clientSockfd) : clientSocketFD(clientSockfd), incomingBuffer(8192), outgoingBuffer(8192) {};
     IncomingMessage processIncomingMessage();
-    void processOutgoingMessage();
+    ssize_t processOutgoingMessage(); // -1 = would block (caller should watch EPOLLOUT), else fully drained
     void enqueueResponseMessage(const std::vector<uint8_t>& responseBytes);
 
 };

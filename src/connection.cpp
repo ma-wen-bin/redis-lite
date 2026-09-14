@@ -30,7 +30,7 @@ IncomingMessage Connection::processIncomingMessage()
     }
 
     const auto &[writePtr, writeLen] = incomingBuffer.writeableSpan();  // get the starting point and length that is empty
-    size_t bytes_read = recv(clientSocketFD, writePtr, writeLen, 0); // write to the buffer
+    ssize_t bytes_read = recv(clientSocketFD, writePtr, writeLen, 0); // write to the buffer
 
     if (bytes_read == -1)
     {
@@ -108,13 +108,26 @@ void Connection::enqueueResponseMessage(const std::vector<uint8_t>& responseByte
 
 }
 
-// PROCESS OUTGOING MESSAGES 
-void Connection::processOutgoingMessage() {
-    std::cout << "outgoing buffer size: " << outgoingBuffer.size() << '\n'; 
+ssize_t Connection::processOutgoingMessage() {
+    std::cout << "outgoing buffer size: " << outgoingBuffer.size() << '\n';
+    ssize_t totalSent = 0;
+
     while (!outgoingBuffer.isEmpty()) {
-        const auto &[readPtr, readLen] = outgoingBuffer.peek();
-        int bytes_sent = send(clientSocketFD, readPtr, readLen, 0);
-        std::cout << "Sent " << bytes_sent << " bytes to client" << '\n'; 
-        outgoingBuffer.consume(bytes_sent);
+        const auto &[readPtr, readLen] = outgoingBuffer.peek(); // only the contiguous run up to the wrap point
+        ssize_t bytes_sent = send(clientSocketFD, readPtr, readLen, 0);
+
+        if (bytes_sent == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return -1; 
+            }
+            std::cout << "Send error : " << std::strerror(errno) << '\n';
+            return -1;
+        }
+
+        std::cout << "Sent " << bytes_sent << " bytes to client" << '\n';
+        outgoingBuffer.consume(bytes_sent); 
+        totalSent += bytes_sent;
     }
+
+    return totalSent; 
 }
