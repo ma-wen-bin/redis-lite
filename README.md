@@ -13,18 +13,68 @@
 
 ## Benchmark Results  
 
-Command Ran: `redis-benchmark -h 127.0.0.1 -p 6380 -c 1 -n 50000 -d 100 -t set,get`
-Note : `-c 1` is required for now since the server only accepts one connection at a time
+### Single Client I/O (Blocking)
 
-**SET, GET operations | 50k request PER operation | 100 byte payloads**
+Command ran (5 times back-to-back, same server process): `redis-benchmark -h 127.0.0.1 -p 6380 -c 1 -n 50000 -d 100 -t set,get`
 
-| Metric | SET | GET |
-|---|---|---|
-| Throughput (requests/sec) | 7503.00 | 1586.04 |
-| Avg latency (ms) | 0.106 | 0.120 |
-| Min latency (ms) | 0.056 | 0.056 |
-| p50 latency (ms) | 0.095 | 0.119 |
-| p95 latency (ms) | 0.151 | 0.175 |
-| p99 latency (ms) | 0.215 | 0.215 |
-| Max latency (ms) | 1.319 | 1.199 |
+Note : `-c 1` represents a single client 
+
+**SET, GET operations | 50k requests per operation, per run | 100 byte payloads**
+
+### SET
+
+| Metric | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | **Average** |
+|---|---|---|---|---|---|---|
+| Throughput (requests/sec) | 11742.60 | 7664.01 | 8021.82 | 7757.95 | 7862.87 | **8609.85** |
+| Avg latency (ms) | 0.134 | 0.123 | 0.118 | 0.122 | 0.120 | **0.123** |
+| Min latency (ms) | 0.064 | 0.064 | 0.056 | 0.064 | 0.064 | **0.062** |
+| p50 latency (ms) | 0.127 | 0.119 | 0.111 | 0.111 | 0.111 | **0.116** |
+| p95 latency (ms) | 0.215 | 0.191 | 0.175 | 0.191 | 0.191 | **0.193** |
+| p99 latency (ms) | 0.311 | 0.263 | 0.247 | 0.263 | 0.255 | **0.268** |
+| Max latency (ms) | 3.735 | 7.631 | 3.023 | 3.671 | 1.303 | **3.873** |
+
+### GET
+
+| Metric | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | **Average** |
+|---|---|---|---|---|---|---|
+| Throughput (requests/sec) | 7568.88 | 7541.48 | 13524.48 | 7994.88 | 8199.41 | **8965.83** |
+| Avg latency (ms) | 0.124 | 0.125 | 0.123 | 0.118 | 0.115 | **0.121** |
+| Min latency (ms) | 0.064 | 0.064 | 0.056 | 0.064 | 0.056 | **0.061** |
+| p50 latency (ms) | 0.119 | 0.119 | 0.111 | 0.111 | 0.103 | **0.113** |
+| p95 latency (ms) | 0.199 | 0.191 | 0.191 | 0.175 | 0.167 | **0.185** |
+| p99 latency (ms) | 0.279 | 0.263 | 0.263 | 0.255 | 0.239 | **0.260** |
+| Max latency (ms) | 1.327 | 2.015 | 3.151 | 4.359 | 1.415 | **2.453** |
+
+
+### Multiple Clients & Multi-threaded I/O (Non-Blocking)
+
+Command ran (5 times back-to-back, same server process): `redis-benchmark -h 127.0.0.1 -p 6380 -c 50 -n 50000 -d 100 -t set,get`
+
+Note : `-c50` represents 50 clients (redis-benchmark default)
+
+**SET, GET operations | 50k requests per operation, per run | 100 byte payloads**
+
+### SET
+
+| Metric | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | **Average** |
+|---|---|---|---|---|---|---|
+| Throughput (requests/sec) | 25406.50 | 25654.18 | 23607.18 | 24319.07 | 23786.87 | **24554.76** |
+| Avg latency (ms) | 1.961 | 1.941 | 2.111 | 2.046 | 2.094 | **2.031** |
+| Min latency (ms) | 0.504 | 0.504 | 0.520 | 0.176 | 0.448 | **0.430** |
+| p50 latency (ms) | 1.951 | 1.895 | 2.079 | 1.983 | 2.071 | **1.996** |
+| p95 latency (ms) | 2.319 | 2.391 | 2.551 | 2.559 | 2.559 | **2.476** |
+| p99 latency (ms) | 5.367 | 5.319 | 5.887 | 5.647 | 5.567 | **5.557** |
+| Max latency (ms) | 7.047 | 7.575 | 7.831 | 9.407 | 9.447 | **8.261** |
+
+### GET
+
+| Metric | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | **Average** |
+|---|---|---|---|---|---|---|
+| Throughput (requests/sec) | 27964.21 | 26896.18 | 26413.10 | 26001.04 | 26399.15 | **26734.74** |
+| Avg latency (ms) | 1.556 | 1.811 | 1.803 | 1.748 | 1.621 | **1.708** |
+| Min latency (ms) | 0.208 | 0.392 | 0.288 | 0.256 | 0.184 | **0.266** |
+| p50 latency (ms) | 1.575 | 1.815 | 1.823 | 1.703 | 1.583 | **1.700** |
+| p95 latency (ms) | 2.183 | 2.399 | 2.287 | 2.447 | 2.335 | **2.330** |
+| p99 latency (ms) | 2.551 | 2.639 | 2.967 | 3.583 | 2.927 | **2.933** |
+| Max latency (ms) | 6.447 | 8.111 | 8.079 | 7.319 | 7.525 | **7.496** |
 
