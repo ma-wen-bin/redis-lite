@@ -13,7 +13,7 @@
 
 ## Benchmark Results  
 
-### Single Client I/O (Blocking)
+### Single Client Blocking I/O
 
 Command ran (5 times back-to-back, same server process): `redis-benchmark -h 127.0.0.1 -p 6380 -c 1 -n 50000 -d 100 -t set,get`
 
@@ -46,7 +46,7 @@ Note : `-c 1` represents a single client
 | Max latency (ms) | 1.327 | 2.015 | 3.151 | 4.359 | 1.415 | **2.453** |
 
 
-### Multiple Clients & Multi-threaded I/O (Non-Blocking)
+### Single Threaded Non-Blocking I/O using epoll
 
 Command ran (5 times back-to-back, same server process): `redis-benchmark -h 127.0.0.1 -p 6380 -c 50 -n 50000 -d 100 -t set,get`
 
