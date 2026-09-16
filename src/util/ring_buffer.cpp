@@ -42,8 +42,8 @@
         uint8_t* tailptr = &buffer[tail];
         size_t length;
 
-        if (full) {  
-            return {tailptr, max_size}; 
+        if (full) {
+            return {tailptr, max_size - tail}; // contiguous run only, same as the wrapped case below
         }
 
         if (head == tail) {
