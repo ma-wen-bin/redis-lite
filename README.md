@@ -1,5 +1,26 @@
 # Perfomance Testing
 
+## Supported Commands
+
+| Command | Description | Example |
+|---|---|---|
+| `GET` | Get the string value of a key | `redis-benchmark -p 6380 GET <key>` |
+| `SET` | Set a key to a string value | `redis-benchmark -p 6380 SET <key> <value>` |
+| `DEL` | Delete one or more keys | `redis-benchmark -p 6380 DEL <key>` |
+| `STRLEN` | Get the length of a string value | `redis-benchmark -p 6380 STRLEN <key>` |
+| `APPEND` | Append a value to an existing string | `redis-benchmark -p 6380 APPEND <key> <value>` |
+| `LPUSH` | Push one or more values onto the front of a list | `redis-benchmark -p 6380 LPUSH <key> <value>` |
+| `RPUSH` | Push one or more values onto the back of a list | `redis-benchmark -p 6380 RPUSH <key> <value>` |
+| `LRANGE` | Get a range of elements from a list | `redis-benchmark -p 6380 LRANGE <key> <start> <stop>` |
+| `HSET` | Set a field in a hash | `redis-benchmark -p 6380 HSET <key> <field> <value>` |
+| `HGET` | Get a field's value from a hash | `redis-benchmark -p 6380 HGET <key> <field>` |
+| `HDEL` | Delete one or more fields from a hash | `redis-benchmark -p 6380 HDEL <key> <field>` |
+| `SADD` | Add one or more members to a set | `redis-benchmark -p 6380 SADD <key> <value>` |
+| `SREM` | Remove one or more members from a set | `redis-benchmark -p 6380 SREM <key> <value>` |
+| `SMEMBERS` | Get all members of a set | `redis-benchmark -p 6380 SMEMBERS <key>` |
+| `SCARD` | Get the number of members in a set | `redis-benchmark -p 6380 SCARD <key>` |
+| `SISMEMBER` | Check whether a value is a member of a set | `redis-benchmark -p 6380 SISMEMBER <key> <value>` |
+
 ## Hardware Details 
 | Component | Value |
 |---|---|
@@ -10,6 +31,10 @@
 | Compiler | g++ 13.3.0 |
 | Network | loopback (127.0.0.1) |
 | Benchmark Client | [redis-benchmark 7.0.15](https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/) | 
+
+
+## Commands Supported 
+
 
 ## Benchmark Results  
 
