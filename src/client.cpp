@@ -58,7 +58,8 @@ int main() {
 
     //SET "hello":"world" -> *3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n
     //GET "hello" -> *2\r\n$3\r\nGET\r\n$5\r\nhello\r\n
-    std::string message = "*3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*3\r\n$3\r\nSET\r\n$5\r\nbello\r\n$5\r\nzorld\r\n*2\r\n$3\r\nGET\r\n$5\r\nbello\r\n";
+    // std::string message = "*3\r\n$3\r\nSET\r\n$5\r\nhello\r\n$5\r\nworld\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n*3\r\n$3\r\nSET\r\n$5\r\nbello\r\n$5\r\nzorld\r\n*2\r\n$3\r\nGET\r\n$5\r\nbello\r\n";
+    std::string message = "+OK\r\n";
 
     size_t offset = 0;
     while (offset < message.length()) {

@@ -11,9 +11,6 @@
 #include "connection.h"
 #include "redis_map.h"
 
-
-using namespace std;
-
 int backlog {10}; //number of connections allowed
 struct addrinfo hints; // struct that contains information of the connection 
 struct addrinfo *servInfo; // pointer to the results
@@ -33,15 +30,6 @@ struct QueuedRequest {
 void processMessage(Connection& connection, int clientSocketfd, int epollfd) {
 
     IncomingMessage incomingMessage = connection.processIncomingMessage();
-    
-    // HANDLE CLIENT DISCONNECT 
-    if (!incomingMessage.clientStatus) {
-        std::cout << "Closing client socket file descriptor." << '\n';
-        connectionMap.erase(clientSocketfd);
-        epoll_ctl(epollfd, EPOLL_CTL_DEL, clientSocketfd, nullptr);
-        close(clientSocketfd);
-        return;
-    }
 
     if (incomingMessage.inboundRequests.empty()) {
         return;
@@ -64,12 +52,22 @@ void processMessage(Connection& connection, int clientSocketfd, int epollfd) {
             epoll_ctl(epollfd, EPOLL_CTL_MOD, clientSocketfd, &event);
         };
     }
+
+    // HANDLE CLIENT DISCONNECT 
+    if (!incomingMessage.clientStatus) {
+        std::cout << "Closing client socket file descriptor." << '\n';
+        connectionMap.erase(clientSocketfd);
+        epoll_ctl(epollfd, EPOLL_CTL_DEL, clientSocketfd, nullptr);
+        close(clientSocketfd);
+        return;
+    }
+
 }
 
 int main() {
     
     //DISABLE COUT 
-    std::cout.rdbuf(nullptr);
+    // std::cout.rdbuf(nullptr);
 
     //SET UP ADDRESS INFORMATION 
     memset(&hints, 0, sizeof(hints)); //ensure no garbage values 
@@ -79,7 +77,7 @@ int main() {
 
     int status = getaddrinfo(nullptr, "6380", &hints, &servInfo); 
     if (status != 0) { 
-        cout << gai_strerror(status);
+        std::cout << gai_strerror(status);
         exit(EXIT_FAILURE);
     }
 
@@ -141,8 +139,8 @@ int main() {
                     clientEvent.data.fd = newSockfd;
                     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, newSockfd, &clientEvent)) {
                         std::cout << "Failed to add client socket file descriptor to epoll" << '\n';
-                        close(epollfd);
-                        return -1;
+                        close(newSockfd);
+                        continue;
                     }
                 }
                 continue;

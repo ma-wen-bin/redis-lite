@@ -122,7 +122,11 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
     uint8_t firstByte = destination[0];
     if (respMap.find(firstByte) == respMap.end())
     {
-        exit(EXIT_FAILURE); // TODO: RETURN INVALID DATA TYPE RESPONSE TO CLIENT
+        req.setFatalError("Resp data type not found");
+        parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
+        parsedMessage.req = req;
+        return parsedMessage;
+
     }
     auto respIterator = respMap.find(firstByte);
     RespType respType = respIterator->second;
@@ -142,10 +146,12 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
         if (expectedMessageLength == 0 ) { EMPTY_BULK_STRING = true; };
         parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
         return parsedMessage;
-    }
-    else
-    {
-        // any other response types -> return response is not configured?
+    } else {
+        std::cout << "Resp data type not supported";
+        req.setFatalError("Resp data type not supported");
+        parsedMessage.parsedBytes = (lastPtr - readPtr + 2);
+        parsedMessage.req = req;
+        return parsedMessage;
     }
 
     return parsedMessage;

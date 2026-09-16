@@ -25,7 +25,8 @@ IncomingMessage Connection::processIncomingMessage()
         if (parsedMessage.parsedBytes == 0)
         { // no delimiter found -> close connection
             std::cout << "Message exceeds buffer size, closing connection." << '\n';
-            exit(EXIT_FAILURE);
+            incomingMessage.clientStatus = false;
+            return incomingMessage;
         }
     }
 
@@ -67,8 +68,10 @@ IncomingMessage Connection::processIncomingMessage()
         const auto &[readPtr, readLen] = incomingBuffer.peek();
         std::cout << "Peeked: " << readLen << '\n';
         ParsedMessage parsedMessage = parser.consumeBytes(readPtr, readLen);
-        
         if (parsedMessage.req) {
+            if (parsedMessage.req.value().isFatal()) {
+                incomingMessage.clientStatus = false;
+            } 
             incomingMessage.inboundRequests.push_back(*parsedMessage.req);
         }
 

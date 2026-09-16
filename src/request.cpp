@@ -23,6 +23,13 @@ void Request::setError(std::string message)
 
 bool Request::hasError() const { return !errorMessage.empty(); }
 
+void Request::setFatalError(std::string message) {
+    errorMessage = std::move(message);
+    fatal = true;
+}
+
+bool Request::isFatal() const { return fatal; }
+
 const std::string& Request::getError() const { return errorMessage; }
 
 const std::string& Request::getCommandName() const { return commandName; }

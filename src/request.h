@@ -58,6 +58,7 @@ class Request {
     RequestType type;
     std::string commandName;
     std::string errorMessage;
+    bool fatal {false};
     std::vector<std::string> args;
 
     public:
@@ -68,6 +69,8 @@ class Request {
     bool setCommand(const std::string& token);
     void addArgument(std::string arg);
     void setError(std::string message);
+    void setFatalError(std::string message);
+    bool isFatal() const;
     bool hasError() const;
     const std::string& getError() const;
     const std::string& getCommandName() const;
