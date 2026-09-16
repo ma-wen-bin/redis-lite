@@ -57,5 +57,6 @@ void Request::reset() {
     spec = nullptr;
     commandName.clear();
     errorMessage.clear();
+    fatal = false;
     args.clear();
 }

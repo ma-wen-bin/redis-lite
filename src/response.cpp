@@ -30,6 +30,19 @@ std::vector<uint8_t> Response::serialize() {
         response.insert(response.end(), lenStr.begin(), lenStr.end());
         response.insert(response.end(), TERMINATOR.begin(), TERMINATOR.end());
         response.insert(response.end(), data.begin(), data.end());
+    } else if (type == ResponseRespType::Array) {
+        std::string countStr = std::to_string(vectorData.size());
+        response.insert(response.end(), countStr.begin(), countStr.end());
+        response.insert(response.end(), TERMINATOR.begin(), TERMINATOR.end());
+        for (const std::string& element : vectorData) {
+            response.push_back('$');
+            std::string elemLenStr = std::to_string(element.size());
+            response.insert(response.end(), elemLenStr.begin(), elemLenStr.end());
+            response.insert(response.end(), TERMINATOR.begin(), TERMINATOR.end());
+            response.insert(response.end(), element.begin(), element.end());
+            response.insert(response.end(), TERMINATOR.begin(), TERMINATOR.end());
+        }
+        return response; // each element already terminated -- skip the generic terminator below
     }
 
     response.insert(response.end(), TERMINATOR.begin(), TERMINATOR.end());

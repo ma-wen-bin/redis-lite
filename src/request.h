@@ -42,7 +42,7 @@ inline static const std::unordered_map<std::string, CommandSpec> commandTable {
     {"LPUSH", {RequestType::LPUSH, 2, INT_MAX}},
     {"RPUSH", {RequestType::RPUSH, 2, INT_MAX}},
     {"LRANGE", {RequestType::LRANGE, 3, 3}},
-    {"HDEL", {RequestType::HDEL, 3, INT_MAX}},
+    {"HDEL", {RequestType::HDEL, 2, INT_MAX}},
     {"HSET", {RequestType::HSET, 3, 3}},
     {"HGET", {RequestType::HGET, 2, 2}},
     {"SADD", {RequestType::SADD, 2, INT_MAX}},

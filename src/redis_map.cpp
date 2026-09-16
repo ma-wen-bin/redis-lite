@@ -116,15 +116,14 @@ void RedisMap::set(const Request &request) {
 
 void RedisMap::del(const Request &request) {
     if (!request.getKey().empty()) {
-        auto stringObjectPtr = getChild<RedisObjectString>(findKey(request.getKey()));
-        if (stringObjectPtr != nullptr) {
+        if (findKey(request.getKey()) != nullptr) {
             redisMap.erase(request.getKey());
             std::cout << "Key: " << request.getKey() << " was successfully deleted." << '\n';
-            processedResponses.push_back(Response(ResponseRespType::Integer, 1)); 
+            processedResponses.push_back(Response(ResponseRespType::Integer, 1));
             return;
         }
-        std::cout << "Key: " << request.getKey() << " does not exist." << '\n';
-        processedResponses.push_back(Response(ResponseRespType::Integer, 0)); 
+        std::cout << "Key: " << request.getKey() << " does not exist, unable to delete." << '\n';
+        processedResponses.push_back(Response(ResponseRespType::Integer, 0));
     }
 }
 
@@ -159,23 +158,33 @@ void RedisMap::append(const Request &request) {
 ////////// lIST OPERATIONS (START)
 void RedisMap::lpush(const Request &request) {
     if (!request.getKey().empty()) {
-        std::vector<std::string> elements(request.getArguments().begin(), request.getArguments().end());
+        std::cout << "Working here!" << '\n';
+        std::cout << "Key here is : " << request.getKey() << '\n';
+        std::cout << "Arguments here is " << request.getArguments().size();
+        std::vector<std::string> allArgs = request.getArguments();
+        std::vector<std::string> elements(allArgs.begin() + 1, allArgs.end());
         auto existing = findKey(request.getKey());
         std::shared_ptr<RedisObjectList> listObjectPtr;
         if (existing == nullptr) {
+            std::cout << "Creating here!" << '\n';
             listObjectPtr = std::make_shared<RedisObjectList>();
             redisMap[request.getKey()] = listObjectPtr;
         } else {
             listObjectPtr = getChild<RedisObjectList>(existing);
+            if (listObjectPtr == nullptr) {
+                processedResponses.push_back(Response(ResponseRespType::SimpleError, "WRONGTYPE Operation against a key holding the wrong kind of value"));
+                return;
+            }
         }
-
+        std::cout << "Processing!" << '\n';
         processedResponses.push_back(Response(ResponseRespType::Integer, listObjectPtr->lpush(elements)));
     }
 }
 
 void RedisMap::rpush(const Request &request) {
     if (!request.getKey().empty()) {
-        std::vector<std::string> elements(request.getArguments().begin(), request.getArguments().end());
+        std::vector<std::string> allArgs = request.getArguments();
+        std::vector<std::string> elements(allArgs.begin() + 1, allArgs.end());
         auto existing = findKey(request.getKey());
         std::shared_ptr<RedisObjectList> listObjectPtr;
         if (existing == nullptr) {
@@ -183,6 +192,10 @@ void RedisMap::rpush(const Request &request) {
             redisMap[request.getKey()] = listObjectPtr;
         } else {
             listObjectPtr = getChild<RedisObjectList>(existing);
+            if (listObjectPtr == nullptr) {
+                processedResponses.push_back(Response(ResponseRespType::SimpleError, "WRONGTYPE Operation against a key holding the wrong kind of value"));
+                return;
+            }
         }
 
         processedResponses.push_back(Response(ResponseRespType::Integer, listObjectPtr->rpush(elements)));
@@ -193,7 +206,7 @@ void RedisMap::lrange(const Request &request) {
     if (!request.getKey().empty()) {
         auto listObjectPtr = getChild<RedisObjectList>(findKey(request.getKey()));
         if (listObjectPtr == nullptr) {
-            processedResponses.push_back(Response(ResponseRespType::Array, "[]"));
+            processedResponses.push_back(Response(ResponseRespType::Array, std::vector<std::string>{}));
             return;
         }
         int startIndex = std::stoi(request.getArguments()[1]);
@@ -208,7 +221,8 @@ void RedisMap::lrange(const Request &request) {
 ////////// HASH OPERATIONS (START)
 void RedisMap::hdel(const Request &request) {
     if (!request.getKey().empty()) {
-        std::vector<std::string> keys(request.getArguments().begin() + 1, request.getArguments().end());
+        std::vector<std::string> allArgs = request.getArguments();
+        std::vector<std::string> keys(allArgs.begin() + 1, allArgs.end());
         auto hashObjectPtr = getChild<RedisObjectHash>(findKey(request.getKey()));
         if (hashObjectPtr != nullptr) {
             processedResponses.push_back(Response(ResponseRespType::Integer, hashObjectPtr->hdel(keys)));
@@ -220,26 +234,37 @@ void RedisMap::hdel(const Request &request) {
 
 void RedisMap::hset(const Request &request) {
     if (!request.getKey().empty()) {
-        auto hashObjectPtr = getChild<RedisObjectHash>(findKey(request.getKey()));
-        if (hashObjectPtr != nullptr) {
-            std::string key = request.getArguments()[1];
-            std::string val = request.getArguments()[2];
-            processedResponses.push_back(Response(ResponseRespType::Integer, hashObjectPtr->hset(key, val)));
+        auto existing = findKey(request.getKey());
+        std::shared_ptr<RedisObjectHash> hashObjectPtr;
+        if (existing == nullptr) {
+            hashObjectPtr = std::make_shared<RedisObjectHash>();
+            redisMap[request.getKey()] = hashObjectPtr;
+        } else {
+            hashObjectPtr = getChild<RedisObjectHash>(existing);
+            if (hashObjectPtr == nullptr) {
+                processedResponses.push_back(Response(ResponseRespType::SimpleError, "WRONGTYPE Operation against a key holding the wrong kind of value"));
+                return;
+            }
         }
+        std::string key = request.getArguments()[1];
+        std::string val = request.getArguments()[2];
+        processedResponses.push_back(Response(ResponseRespType::Integer, hashObjectPtr->hset(key, val)));
     }
 }
 
 void RedisMap::hget(const Request &request) {
     if (!request.getKey().empty()) {
         auto hashObjectPtr = getChild<RedisObjectHash>(findKey(request.getKey()));
-        if (hashObjectPtr != nullptr) {
-            std::pair<std::string, int> result = hashObjectPtr->hget(request.getArguments()[1]);
-            if (result.first.empty()) {
-                processedResponses.push_back(Response(ResponseRespType::Integer, result.second));
-                return;
-            }  
-            processedResponses.push_back(Response(ResponseRespType::BulkString, result.first));
+        if (hashObjectPtr == nullptr) {
+            processedResponses.push_back(Response(ResponseRespType::Nil));
+            return;
         }
+        std::pair<std::string, int> result = hashObjectPtr->hget(request.getArguments()[1]);
+        if (result.second == -1) {
+            processedResponses.push_back(Response(ResponseRespType::Nil));
+            return;
+        }
+        processedResponses.push_back(Response(ResponseRespType::BulkString, result.first));
     }
 }
 ////////// HASH OPERATIONS (END)
@@ -249,11 +274,21 @@ void RedisMap::hget(const Request &request) {
 ////////// SET OPERATIONS (START)
 void RedisMap::sadd(const Request &request) {
     if (!request.getKey().empty()) {
-        auto setObjectPtr = getChild<RedisObjectSet>(findKey(request.getKey()));
-        if (setObjectPtr != nullptr) {
-            std::vector<std::string> elements(request.getArguments().begin() + 1, request.getArguments().end());
-            processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->sadd(elements)));
+        auto existing = findKey(request.getKey());
+        std::shared_ptr<RedisObjectSet> setObjectPtr;
+        if (existing == nullptr) {
+            setObjectPtr = std::make_shared<RedisObjectSet>();
+            redisMap[request.getKey()] = setObjectPtr;
+        } else {
+            setObjectPtr = getChild<RedisObjectSet>(existing);
+            if (setObjectPtr == nullptr) {
+                processedResponses.push_back(Response(ResponseRespType::SimpleError, "WRONGTYPE Operation against a key holding the wrong kind of value"));
+                return;
+            }
         }
+        std::vector<std::string> allArgs = request.getArguments();
+        std::vector<std::string> elements(allArgs.begin() + 1, allArgs.end());
+        processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->sadd(elements)));
     }
 }
 
@@ -261,7 +296,8 @@ void RedisMap::srem(const Request &request) {
     if (!request.getKey().empty()) {
         auto setObjectPtr = getChild<RedisObjectSet>(findKey(request.getKey()));
         if (setObjectPtr != nullptr) {
-            std::vector<std::string> elements(request.getArguments().begin() + 1, request.getArguments().end());
+            std::vector<std::string> allArgs = request.getArguments();
+            std::vector<std::string> elements(allArgs.begin() + 1, allArgs.end());
             processedResponses.push_back(Response(ResponseRespType::Integer, setObjectPtr->srem(elements)));
         }
     }

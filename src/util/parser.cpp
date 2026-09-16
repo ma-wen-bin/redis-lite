@@ -66,6 +66,9 @@ ParsedMessage MessageParser::consumeBytes(uint8_t *readPtr, size_t length) {
 
             if (EXPECTING_COMMAND) {
                 EXPECTING_COMMAND = false;
+                std::transform(data.begin(), data.end(), data.begin(), [](unsigned char c) {
+                    return std::toupper(c);
+                });
                 if (!req.setCommand(data)) {
                     std::cout << "Unknown command: " << data << "\n";
                     req.setError("ERR unknown command '" + data + "'");

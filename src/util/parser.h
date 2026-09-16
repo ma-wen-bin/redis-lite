@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <optional>
 #include <iostream>
+#include <cctype>
 #include "../request.h"
 
 struct ParsedMessage {

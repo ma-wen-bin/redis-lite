@@ -40,15 +40,16 @@ int RedisObjectList::rpush(const std::vector<std::string>& elements) {
 
 std::vector<std::string> RedisObjectList::lrange(int startIndex, int stopIndex) {
     int size = static_cast<int>(list.size());
+    if (size == 0) return {};
 
-    if (startIndex < 0) startIndex = 0;
-    if (stopIndex < 0) stopIndex = 0;
-    startIndex = std::max(0, startIndex);
-    stopIndex = std::min(size-1, stopIndex);
+    if (startIndex < 0) startIndex = std::max(size + startIndex, 0);
+    if (stopIndex < 0) stopIndex = size + stopIndex; 
 
-    if (startIndex > stopIndex || stopIndex >= size) {
+    if (startIndex >= size || stopIndex < 0 || startIndex > stopIndex) {
         return {};
     }
+
+    stopIndex = std::min(stopIndex, size - 1);
 
     return std::vector<std::string>(list.begin() + startIndex, list.begin() + stopIndex + 1);
 }
