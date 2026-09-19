@@ -1,6 +1,5 @@
 #include "response.h"
 
-
 ResponseRespType Response::getRespType() {
     return type;
 }

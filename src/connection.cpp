@@ -1,9 +1,4 @@
-#include "connection.h"
-#include <cstring>
-#include <iostream>
-#include <sys/socket.h>
-#include "request.h"
-
+#include "../include/connection.h"
 
 // PROCESS INCOMING MESSAGES
 IncomingMessage Connection::processIncomingMessage()

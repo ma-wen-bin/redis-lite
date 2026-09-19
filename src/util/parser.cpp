@@ -1,6 +1,4 @@
-
-#include "parser.h"
-#include "../request.h"
+#include "../../include/parser.h"
 
 int getValue(std::vector<uint8_t> &destination) {
     int result{0};

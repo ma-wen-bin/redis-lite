@@ -8,7 +8,7 @@
 #include <optional>
 #include <iostream>
 #include <cctype>
-#include "../request.h"
+#include "request.h"
 
 struct ParsedMessage {
     std::optional<Request> req;

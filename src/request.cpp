@@ -1,6 +1,5 @@
 #include "request.h"
 
-
 bool Request::setCommand(const std::string& token) {
     commandName = token;
     auto iterator = commandTable.find(token);

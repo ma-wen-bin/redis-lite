@@ -1,4 +1,4 @@
-#include "redis_map.h"
+#include "../include/redis_map.h"
 
 std::vector<Response> RedisMap::processRequest(const Request& request) {
     performRequest(request);

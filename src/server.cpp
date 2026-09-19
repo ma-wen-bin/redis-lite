@@ -8,8 +8,8 @@
 #include <netdb.h>
 #include <cstring>
 #include <cstddef>
-#include "connection.h"
-#include "redis_map.h"
+#include "../include/connection.h"
+#include "../include/redis_map.h"
 
 int backlog {10}; //number of connections allowed
 struct addrinfo hints; // struct that contains information of the connection 

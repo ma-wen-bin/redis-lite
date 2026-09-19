@@ -1,4 +1,4 @@
-#include "redis_obj.h"
+#include "../include/redis_obj.h"
 
 //BASE METHOD 
 RedisObjectType RedisObject::getType() const {
