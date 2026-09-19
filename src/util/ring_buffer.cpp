@@ -1,4 +1,4 @@
-#include "ring_buffer.h"
+#include "../../include/ring_buffer.h"
 
     //constructor 
     RingBuffer::RingBuffer(size_t size) : max_size(size), buffer(size, 0) {
